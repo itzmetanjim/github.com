@@ -307,7 +307,27 @@ async function renderFileView(owner, repo, branch, filePath, app) {
         `;
     } catch (error) {
         console.error("Error rendering file:", error);
-        app.innerHTML = renderNotSupported(owner, repo, `blob/${branch}/${filePath}`);
+        if(!error.message || !error.message.toLowerCase().includes("api rate limit exceeded")){
+            app.innerHTML = renderNotSupported(owner, repo, `blob/${branch}/${filePath}`);
+        }else{
+            const githubLink = buildGitHubLink(owner, repo, `blob/${branch}/${filePath}`);
+            app.innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        `
+            document.getElementById('pat-submit').addEventListener('click', () => {
+                const pat = document.getElementById('pat-input').value.trim();
+                if (pat) {
+                    localStorage.setItem('github_pat', pat);
+                    window.location.reload();
+                }
+            });
+        }
     }
 }
 
@@ -390,7 +410,27 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
         `;
     } catch (error) {
         console.error("Error rendering folder:", error);
-        app.innerHTML = renderNotSupported(owner, repo, `tree/${branch}/${folderPath}`);
+        if(!error.message || !error.message.toLowerCase().includes("api rate limit exceeded")){
+            app.innerHTML = renderNotSupported(owner, repo, `tree/${branch}/${folderPath}`);
+        }else{
+            const githubLink = buildGitHubLink(owner, repo, `tree/${branch}/${folderPath}`);
+            app.innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        `
+            document.getElementById('pat-submit').addEventListener('click', () => {
+                const pat = document.getElementById('pat-input').value.trim();
+                if (pat) {
+                    localStorage.setItem('github_pat', pat);
+                    window.location.reload();
+                }
+            });
+        }
     }
 }
 
@@ -533,7 +573,27 @@ async function renderReleases(owner, repo, app) {
         `;
     } catch (error) {
         console.error("Error rendering releases:", error);
-        app.innerHTML = renderNotSupported(owner, repo, 'releases');
+        if(!error.message || !error.message.toLowerCase().includes("api rate limit exceeded")){
+            app.innerHTML = renderNotSupported(owner, repo, 'releases');
+        }else{
+            const githubLink = buildGitHubLink(owner, repo, 'releases');
+            app.innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        `
+            document.getElementById('pat-submit').addEventListener('click', () => {
+                const pat = document.getElementById('pat-input').value.trim();
+                if (pat) {
+                    localStorage.setItem('github_pat', pat);
+                    window.location.reload();
+                }
+            });
+        }
     }
 }
 
@@ -606,7 +666,27 @@ async function renderReleaseTag(owner, repo, tagName, app) {
         `;
     } catch (error) {
         console.error("Error rendering release tag:", error);
-        app.innerHTML = renderNotSupported(owner, repo, `releases/tag/${tagName}`);
+        if(!error.message || !error.message.toLowerCase().includes("api rate limit exceeded")){
+            app.innerHTML = renderNotSupported(owner, repo, `releases/tag/${tagName}`);
+        }else{
+            const githubLink = buildGitHubLink(owner, repo, `releases/tag/${tagName}`);
+            app.innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        `
+            document.getElementById('pat-submit').addEventListener('click', () => {
+                const pat = document.getElementById('pat-input').value.trim();
+                if (pat) {
+                    localStorage.setItem('github_pat', pat);
+                    window.location.reload();
+                }
+            });
+        }
     }
 }
 
