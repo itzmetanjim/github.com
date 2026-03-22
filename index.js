@@ -9,8 +9,8 @@ const SVGFOLDER=`<svg class="svgi" xmlns="http://www.w3.org/2000/svg" viewBox="0
 const SVGZIP=`<svg class="svgi2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M3.5 1.75v11.5c0 .09.048.173.126.217a.75.75 0 0 1-.752 1.298A1.748 1.748 0 0 1 2 13.25V1.75C2 .784 2.784 0 3.75 0h5.586c.464 0 .909.185 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0 1 12.25 15h-.5a.75.75 0 0 1 0-1.5h.5a.25.25 0 0 0 .25-.25V4.664a.25.25 0 0 0-.073-.177L9.513 1.573a.25.25 0 0 0-.177-.073H7.25a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5h-3a.25.25 0 0 0-.25.25Zm3.75 8.75h.5c.966 0 1.75.784 1.75 1.75v3a.75.75 0 0 1-.75.75h-2.5a.75.75 0 0 1-.75-.75v-3c0-.966.784-1.75 1.75-1.75ZM6 5.25a.75.75 0 0 1 .75-.75h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 6 5.25Zm.75 2.25h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM8 6.75A.75.75 0 0 1 8.75 6h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 8 6.75ZM8.75 3h.5a.75.75 0 0 1 0 1.5h-.5a.75.75 0 0 1 0-1.5ZM8 9.75A.75.75 0 0 1 8.75 9h.5a.75.75 0 0 1 0 1.5h-.5A.75.75 0 0 1 8 9.75Zm-1 2.5v2.25h1v-2.25a.25.25 0 0 0-.25-.25h-.5a.25.25 0 0 0-.25.25Z"></path></svg>`;
 const SVGFILES=`<svg class="svgi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M.75 1.75A.75.75 0 0 1 1.5 1h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75ZM.75 5.5A.75.75 0 0 1 1.5 4.75h12a.75.75 0 0 1 0 1.5h-12A.75.75 0 0 1 .75 5.5ZM1.5 8.25a.75.75 0 0 0 0 1.5h12a.75.75 0 0 0 0-1.5h-12ZM.75 12.75A.75.75 0 0 1 1.5 12h12a.75.75 0 0 1 0 1.5h-12a.75.75 0 0 1-.75-.75Z"></path></svg>`;
 const SVGCHEVRON=`<svg class="svgi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M6.22 3.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042L9.94 8 6.22 4.28a.75.75 0 0 1 0-1.06Z"></path></svg>`;
+const SVGRELEASE=`<svg class="svgi" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path d="M1 7.775V2.75C1 1.784 1.784 1 2.75 1h5.025c.464 0 .91.184 1.238.513l6.25 6.25a1.75 1.75 0 0 1 0 2.474l-5.026 5.026a1.75 1.75 0 0 1-2.474 0l-6.25-6.25A1.752 1.752 0 0 1 1 7.775Zm1.5 0c0 .066.026.13.073.177l6.25 6.25a.25.25 0 0 0 .354 0l5.025-5.025a.25.25 0 0 0 0-.354l-6.25-6.25a.25.25 0 0 0-.177-.073H2.75a.25.25 0 0 0-.25.25ZM6 5a1 1 0 1 1 0 2 1 1 0 0 1 0-2Z"></path></svg>`;
 
-// Global state
 let repoTreeCache = null;
 
 function formatBytes(bytes) {
@@ -37,6 +37,15 @@ function formatTimeAgo(dateString) {
     if (months < 12) return `${months} month${months !== 1 ? 's' : ''} ago`;
     const years = Math.floor(months / 12);
     return `${years} year${years !== 1 ? 's' : ''} ago`;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+    });
 }
 
 function getLanguageFromFilename(filename) {
@@ -72,6 +81,56 @@ function decodeBase64(str) {
     }
 }
 
+function buildLink(owner, repo, type, branch, path) {
+    const base = '/github.com';
+    if (!type) {
+        return `${base}/${owner}/${repo}`;
+    }
+    if (type === 'releases' && !branch) {
+        return `${base}/${owner}/${repo}/releases`;
+    }
+    if (type === 'releases/tag') {
+        return `${base}/${owner}/${repo}/releases/tag/${branch}`;
+    }
+    if (!path) {
+        return `${base}/${owner}/${repo}/${type}/${branch}`;
+    }
+    return `${base}/${owner}/${repo}/${type}/${branch}/${path}`;
+}
+
+function buildGitHubLink(owner, repo, extraPath) {
+    let url = `https://github.com/${owner}/${repo}`;
+    if (extraPath) {
+        url += '/' + extraPath;
+    }
+    return url;
+}
+
+function getPathFromHash() {
+    let hash = window.location.hash;
+    if (!hash || hash === '#' || hash === '#/') {
+        return '';
+    }
+    if (hash.startsWith('#/')) {
+        return hash.substring(2);
+    }
+    if (hash.startsWith('#')) {
+        return hash.substring(1);
+    }
+    return hash;
+}
+
+function renderNotSupported(owner, repo, extraPath) {
+    const githubLink = buildGitHubLink(owner, repo, extraPath);
+    return `
+        <div class="not-supported">
+            <h1>This page is not supported</h1>
+            <p>This GitHub client does not support this link. Because GitHub does not allow IFrames, I had to make an alternative client for GitHub, which may not support all features.</p>
+            <p><a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub</a></p>
+        </div>
+    `;
+}
+
 async function fetchRepoTree(owner, repo, branch) {
     try {
         const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
@@ -84,7 +143,6 @@ async function fetchRepoTree(owner, repo, branch) {
 }
 
 function buildTreeHTML(tree, owner, repo, branch, currentPath) {
-    // Build a nested structure
     const root = { children: {}, type: 'tree' };
     
     tree.forEach(item => {
@@ -120,11 +178,12 @@ function buildTreeHTML(tree, owner, repo, branch, currentPath) {
             const isInPath = currentPath && currentPath.startsWith(child.path + '/');
             
             const paddingLeft = 12 + (indent * 16);
+            const link = buildLink(owner, repo, linkType, branch, child.path);
             
-            html += `<div class="tree-item ${isActive ? 'active' : ''}" style="padding-left: ${paddingLeft}px;" onclick="window.location.hash='#/${owner}/${repo}/${linkType}/${branch}/${child.path}';window.location.reload()">
+            html += `<a href="${link}" class="tree-item ${isActive ? 'active' : ''}" style="padding-left: ${paddingLeft}px;">
                 <span class="tree-icon">${icon}</span>
                 <span>${child.name}</span>
-            </div>`;
+            </a>`;
             
             if (isFolder && (isInPath || isActive)) {
                 html += renderNode(child, indent + 1);
@@ -138,7 +197,8 @@ function buildTreeHTML(tree, owner, repo, branch, currentPath) {
 
 function renderBreadcrumb(owner, repo, branch, path) {
     const parts = path ? path.split('/') : [];
-    let html = `<a href="#/${owner}/${repo}" class="breadcrumb-link">${repo}</a>`;
+    const homeLink = buildLink(owner, repo);
+    let html = `<a href="${homeLink}" class="breadcrumb-link">${repo}</a>`;
     
     if (parts.length > 0) {
         let currentPath = '';
@@ -148,7 +208,8 @@ function renderBreadcrumb(owner, repo, branch, path) {
             if (idx === parts.length - 1) {
                 html += `<span class="breadcrumb-current">${part}</span>`;
             } else {
-                html += `<a href="#/${owner}/${repo}/tree/${branch}/${currentPath}" class="breadcrumb-link">${part}</a>`;
+                const link = buildLink(owner, repo, 'tree', branch, currentPath);
+                html += `<a href="${link}" class="breadcrumb-link">${part}</a>`;
             }
         });
     }
@@ -233,7 +294,7 @@ async function renderFileView(owner, repo, branch, filePath, app) {
         `;
     } catch (error) {
         console.error("Error rendering file:", error);
-        app.innerHTML = `<h1>Error loading file</h1><p>${error.message}</p>`;
+        app.innerHTML = renderNotSupported(owner, repo, `blob/${branch}/${filePath}`);
     }
 }
 
@@ -263,22 +324,23 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
         
         const pathParts = folderPath.split('/');
         const parentPath = pathParts.slice(0, -1).join('/');
-        const parentLink = parentPath ? `#/${owner}/${repo}/tree/${branch}/${parentPath}` : `#/${owner}/${repo}`;
+        const parentLink = parentPath ? buildLink(owner, repo, 'tree', branch, parentPath) : buildLink(owner, repo);
         fileListHTML += `
-            <div class="file-row" onclick="window.location.hash='${parentLink}';window.location.reload()">
+            <a href="${parentLink}" class="file-row">
                 <div class="file-icon">${SVGFOLDER}</div>
-                <div class="file-name" style="color: #e6edf3;">..</div>
-            </div>
+                <div class="file-name">..</div>
+            </a>
         `;
         
         sortedContents.forEach(item => {
             const icon = item.type === 'dir' ? SVGFOLDER : SVGFILE;
             const itemType = item.type === 'dir' ? 'tree' : 'blob';
+            const link = buildLink(owner, repo, itemType, branch, item.path);
             fileListHTML += `
-                <div class="file-row" onclick="window.location.hash='#/${owner}/${repo}/${itemType}/${branch}/${item.path}';window.location.reload()">
+                <a href="${link}" class="file-row">
                     <div class="file-icon">${icon}</div>
-                    <div class="file-name" style="color: #e6edf3;">${item.name}</div>
-                </div>
+                    <div class="file-name">${item.name}</div>
+                </a>
             `;
         });
         
@@ -315,7 +377,7 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
         `;
     } catch (error) {
         console.error("Error rendering folder:", error);
-        app.innerHTML = `<h1>Error loading folder</h1><p>${error.message}</p>`;
+        app.innerHTML = renderNotSupported(owner, repo, `tree/${branch}/${folderPath}`);
     }
 }
 
@@ -344,7 +406,8 @@ async function renderReadme(owner, repo, branch, readmeContent, readmePath) {
     
     rendered = rendered.replace(/href="(?!http|\/\/|#|mailto:)([^"]+)"/g, (match, p1) => {
         const fixedPath = basePath ? `${basePath}/${p1}` : p1;
-        return `href="#/${owner}/${repo}/blob/${branch}/${fixedPath}"`;
+        const link = buildLink(owner, repo, 'blob', branch, fixedPath);
+        return `href="${link}"`;
     });
     
     return `
@@ -353,6 +416,185 @@ async function renderReadme(owner, repo, branch, readmeContent, readmePath) {
             <div class="readme-content markdown-body">${rendered}</div>
         </div>
     `;
+}
+
+async function renderReleases(owner, repo, app) {
+    try {
+        app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading releases...</div>`;
+        
+        const [releasesRes, repoRes] = await Promise.all([
+            fetch(`https://api.github.com/repos/${owner}/${repo}/releases`),
+            fetch(`https://api.github.com/repos/${owner}/${repo}`)
+        ]);
+        
+        const releases = await releasesRes.json();
+        const repoData = await repoRes.json();
+        
+        if (!Array.isArray(releases)) {
+            throw new Error(releases.message || 'Failed to load releases');
+        }
+        
+        const homeLink = buildLink(owner, repo);
+        
+        let releasesHTML = '';
+        
+        if (releases.length === 0) {
+            releasesHTML = `<div class="no-releases">No releases published yet.</div>`;
+        } else {
+            releases.forEach((release, idx) => {
+                const releaseLink = buildLink(owner, repo, 'releases/tag', release.tag_name);
+                const isLatest = idx === 0;
+                
+                let bodyHTML = '';
+                if (release.body && typeof markdownit !== 'undefined') {
+                    const md = window.markdownit({ html: true, linkify: true, breaks: true });
+                    bodyHTML = md.render(release.body);
+                }
+                
+                let assetsHTML = '';
+                if (release.assets && release.assets.length > 0) {
+                    assetsHTML = `
+                        <div class="release-assets">
+                            <div class="assets-header">Assets (${release.assets.length + 2})</div>
+                            ${release.assets.map(asset => `
+                                <a href="${asset.browser_download_url}" class="asset-row" target="_blank">
+                                    <span class="asset-name">${asset.name}</span>
+                                    <span class="asset-size">${formatBytes(asset.size)}</span>
+                                </a>
+                            `).join('')}
+                            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.zip" class="asset-row" target="_blank">
+                                <span class="asset-name">Source code (zip)</span>
+                            </a>
+                            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.tar.gz" class="asset-row" target="_blank">
+                                <span class="asset-name">Source code (tar.gz)</span>
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    assetsHTML = `
+                        <div class="release-assets">
+                            <div class="assets-header">Assets (2)</div>
+                            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.zip" class="asset-row" target="_blank">
+                                <span class="asset-name">Source code (zip)</span>
+                            </a>
+                            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.tar.gz" class="asset-row" target="_blank">
+                                <span class="asset-name">Source code (tar.gz)</span>
+                            </a>
+                        </div>
+                    `;
+                }
+                
+                releasesHTML += `
+                    <div class="release-card">
+                        <div class="release-header">
+                            <div class="release-title-row">
+                                <a href="${releaseLink}" class="release-title">${release.name || release.tag_name}</a>
+                                ${isLatest ? '<span class="latest-badge">Latest</span>' : ''}
+                                ${release.prerelease ? '<span class="prerelease-badge">Pre-release</span>' : ''}
+                            </div>
+                            <div class="release-meta">
+                                ${SVGTAG} <a href="${releaseLink}" class="release-tag">${release.tag_name}</a>
+                                <span class="release-date">${formatDate(release.published_at)}</span>
+                            </div>
+                        </div>
+                        ${bodyHTML ? `<div class="release-body markdown-body">${bodyHTML}</div>` : ''}
+                        ${assetsHTML}
+                    </div>
+                `;
+            });
+        }
+        
+        app.innerHTML = `
+            <div id="releases">
+                <div class="releases-header">
+                    <div class="releases-nav">
+                        <a href="${homeLink}" class="breadcrumb-link">${repo}</a>
+                        <span class="separator">/</span>
+                        <span class="breadcrumb-current">Releases</span>
+                    </div>
+                </div>
+                <div class="releases-content">
+                    ${releasesHTML}
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error rendering releases:", error);
+        app.innerHTML = renderNotSupported(owner, repo, 'releases');
+    }
+}
+
+async function renderReleaseTag(owner, repo, tagName, app) {
+    try {
+        app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading release...</div>`;
+        
+        const releaseRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tagName}`);
+        const release = await releaseRes.json();
+        
+        if (release.message) {
+            throw new Error(release.message);
+        }
+        
+        const homeLink = buildLink(owner, repo);
+        const releasesLink = buildLink(owner, repo, 'releases');
+        
+        let bodyHTML = '';
+        if (release.body && typeof markdownit !== 'undefined') {
+            const md = window.markdownit({ html: true, linkify: true, breaks: true });
+            bodyHTML = md.render(release.body);
+        }
+        
+        let assetsHTML = '';
+        if (release.assets && release.assets.length > 0) {
+            assetsHTML = release.assets.map(asset => `
+                <a href="${asset.browser_download_url}" class="asset-row" target="_blank">
+                    <span class="asset-name">${asset.name}</span>
+                    <span class="asset-size">${formatBytes(asset.size)}</span>
+                </a>
+            `).join('');
+        }
+        
+        assetsHTML += `
+            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.zip" class="asset-row" target="_blank">
+                <span class="asset-name">Source code (zip)</span>
+            </a>
+            <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.tar.gz" class="asset-row" target="_blank">
+                <span class="asset-name">Source code (tar.gz)</span>
+            </a>
+        `;
+        
+        app.innerHTML = `
+            <div id="release-single">
+                <div class="releases-header">
+                    <div class="releases-nav">
+                        <a href="${homeLink}" class="breadcrumb-link">${repo}</a>
+                        <span class="separator">/</span>
+                        <a href="${releasesLink}" class="breadcrumb-link">Releases</a>
+                        <span class="separator">/</span>
+                        <span class="breadcrumb-current">${tagName}</span>
+                    </div>
+                </div>
+                <div class="release-single-content">
+                    <div class="release-single-header">
+                        <h1 class="release-single-title">${release.name || release.tag_name}</h1>
+                        <div class="release-single-meta">
+                            ${release.prerelease ? '<span class="prerelease-badge">Pre-release</span>' : '<span class="latest-badge">Release</span>'}
+                            <span>${SVGTAG} ${release.tag_name}</span>
+                            <span>Published ${formatDate(release.published_at)}</span>
+                        </div>
+                    </div>
+                    ${bodyHTML ? `<div class="release-body markdown-body">${bodyHTML}</div>` : ''}
+                    <div class="release-assets">
+                        <div class="assets-header">Assets</div>
+                        ${assetsHTML}
+                    </div>
+                </div>
+            </div>
+        `;
+    } catch (error) {
+        console.error("Error rendering release tag:", error);
+        app.innerHTML = renderNotSupported(owner, repo, `releases/tag/${tagName}`);
+    }
 }
 
 async function renderHome(owner, repo, branch, app) {
@@ -370,7 +612,15 @@ async function renderHome(owner, repo, branch, app) {
         const commits = await commitsRes.json();
         const lastCommit = commits[0];
         
+        if (repoData.message) {
+            throw new Error(repoData.message);
+        }
+        
         if (!branch) branch = repoData.default_branch;
+        
+        if (!Array.isArray(contents)) {
+            throw new Error(contents.message || 'Failed to load repository contents');
+        }
         
         const dirs = contents.filter(item => item.type === 'dir').sort((a, b) => a.name.localeCompare(b.name));
         const files = contents.filter(item => item.type === 'file').sort((a, b) => a.name.localeCompare(b.name));
@@ -380,11 +630,12 @@ async function renderHome(owner, repo, branch, app) {
         sortedContents.forEach(item => {
             const icon = item.type === 'dir' ? SVGFOLDER : SVGFILE;
             const itemType = item.type === 'dir' ? 'tree' : 'blob';
+            const link = buildLink(owner, repo, itemType, branch, item.path);
             fileListHTML += `
-                <div class="file-row" onclick="window.location.hash='#/${owner}/${repo}/${itemType}/${branch}/${item.path}';window.location.reload()">
+                <a href="${link}" class="file-row">
                     <div class="file-icon">${icon}</div>
-                    <div class="file-name" style="color: #e6edf3;">${item.name}</div>
-                </div>
+                    <div class="file-name">${item.name}</div>
+                </a>
             `;
         });
         
@@ -394,6 +645,8 @@ async function renderHome(owner, repo, branch, app) {
             : '';
         const language = repoData.language ? `<div class="repo-language"><span class="language-color" style="background-color: ${getLanguageColor(repoData.language)};"></span>${repoData.language}</div>` : '';
         const license = repoData.license ? `<div class="repo-license">${SVGFILE} ${repoData.license.name}</div>` : '';
+        
+        const releasesLink = buildLink(owner, repo, 'releases');
         
         app.innerHTML = `
             <div id="home">
@@ -416,9 +669,12 @@ async function renderHome(owner, repo, branch, app) {
                             <div class="branch-selector">
                                 <button class="branch-button">${SVGBRANCH} ${branch} <span class="dropdown-caret">▼</span></button>
                             </div>
-                            <a class="a" href="https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip" target="_blank" download>
-                                <button class="green">${SVGZIP} Code</button>
-                            </a>
+                            <div class="header-buttons">
+                                <a href="${releasesLink}" class="a"><button>${SVGRELEASE} Releases</button></a>
+                                <a class="a" href="https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip" target="_blank" download>
+                                    <button class="green">${SVGZIP} Code</button>
+                                </a>
+                            </div>
                         </div>
                         
                         <div class="commit-bar commit-bar-standalone">
@@ -471,21 +727,16 @@ async function renderHome(owner, repo, branch, app) {
         }
     } catch (error) {
         console.error("Error rendering home:", error);
-        app.innerHTML = `<h1>Error loading repository</h1><p>${error.message}</p>`;
+        app.innerHTML = renderNotSupported(owner, repo, '');
     }
 }
 
 async function main() {
-    const currentHash = window.location.hash;
+    const path = getPathFromHash();
     const app = document.querySelector("#app");
     
-    if (currentHash) {
-        let hashWithoutSymbol = currentHash.substring(1);
-        if (hashWithoutSymbol.startsWith("/")) {
-            hashWithoutSymbol = hashWithoutSymbol.substring(1);
-        }
-        
-        const parts = hashWithoutSymbol.split("/");
+    if (path) {
+        const parts = path.split("/").filter(p => p);
         const owner = parts[0];
         const repo = parts[1];
         
@@ -498,10 +749,28 @@ async function main() {
         let viewType = 'home';
         let filePath = '';
         
-        if (parts.length >= 4 && (parts[2] === 'tree' || parts[2] === 'blob')) {
-            viewType = parts[2];
-            branch = parts[3];
-            filePath = parts.slice(4).join('/');
+        if (parts.length >= 3) {
+            const possibleViewType = parts[2];
+            
+            if (possibleViewType === 'releases' && parts[3] === 'tag' && parts[4]) {
+                const tagName = parts.slice(4).join('/');
+                await renderReleaseTag(owner, repo, tagName, app);
+                return;
+            }
+            
+            if (possibleViewType === 'releases') {
+                await renderReleases(owner, repo, app);
+                return;
+            }
+            
+            if (possibleViewType === 'tree' || possibleViewType === 'blob') {
+                viewType = possibleViewType;
+                branch = parts[3] || '';
+                filePath = parts.slice(4).join('/');
+            } else {
+                app.innerHTML = renderNotSupported(owner, repo, parts.slice(2).join('/'));
+                return;
+            }
         }
         
         if (viewType === 'tree' && filePath === '') {
@@ -534,9 +803,11 @@ async function main() {
     } else {
         app.innerHTML = `
             <div style="padding: 40px;">
+            <p>(if you are here from spaceshipvote, there has been a bug)
                 <h1>GitHub Alt Client</h1>
-                <p>Use the URL format: <code>#/username/repository</code></p>
+                <p>Use the URL format: <code>#/owner/repo</code></p>
                 <p>Example: <a href="#/itzmetanjim/mcgit">#/itzmetanjim/mcgit</a></p>
+                <p style="color: #8b949e; margin-top: 20px;">This client mirrors GitHub URLs. You can also type "tanjim.org/" before any "github.com" URL to view it here.</p>
             </div>
         `;
     }
@@ -544,5 +815,5 @@ async function main() {
 
 main().catch(err => {
     console.error("Error in main:", err);
-    document.querySelector("#app").innerHTML = `<h1>Error</h1><p>${err.message}</p>`;
+    document.querySelector("#app").innerHTML = renderNotSupported('', '');
 });

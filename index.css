@@ -27,7 +27,6 @@ a {
     margin-top: 20px;
 }
 
-/* Home Page Layout */
 .home-header {
     display: flex;
     justify-content: space-between;
@@ -230,7 +229,6 @@ hr{
 }
 .a {text-decoration:none;color:inherit}
 
-/* File listing container */
 .repo-container{
     border: 1px solid #30363d;
     border-radius: 6px;
@@ -285,9 +283,6 @@ hr{
     border-color: #2ea043;
 }
 
-/* ===================== */
-/* FILE TREE SIDEBAR     */
-/* ===================== */
 
 .browse-layout {
     display: grid;
@@ -363,9 +358,6 @@ hr{
     padding-left: 20px;
 }
 
-/* ===================== */
-/* BREADCRUMB & MAIN     */
-/* ===================== */
 
 .file-header {
     margin: 16px 0;
@@ -400,9 +392,6 @@ hr{
     font-weight: 600;
 }
 
-/* ===================== */
-/* COMMIT BAR            */
-/* ===================== */
 
 .commit-bar {
     background-color: #161b22;
@@ -479,9 +468,6 @@ hr{
     font-weight: 400;
 }
 
-/* ===================== */
-/* FILE VIEW             */
-/* ===================== */
 
 .file-info-bar {
     background-color: #161b22;
@@ -563,9 +549,6 @@ hr{
     font-weight: 400;
 }
 
-/* ===================== */
-/* README STYLES         */
-/* ===================== */
 
 .readme-container {
     border: 1px solid #30363d;
@@ -590,7 +573,6 @@ hr{
     background-color: #0d1117;
 }
 
-/* Markdown Body Styles (GitHub-like) */
 .markdown-body {
     color: #e6edf3;
     font-size: 16px;
@@ -721,9 +703,6 @@ hr{
     margin: 24px 0;
 }
 
-/* ===================== */
-/* RESPONSIVE            */
-/* ===================== */
 
 @media (max-width: 900px) {
     .browse-layout {
@@ -733,4 +712,227 @@ hr{
     .file-tree-sidebar {
         display: none;
     }
+}
+
+
+#releases, #release-single {
+    margin-top: 20px;
+}
+
+.releases-header {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #30363d;
+}
+
+.releases-nav {
+    font-size: 16px;
+    color: #8b949e;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.releases-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.release-card {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.release-header {
+    background-color: #161b22;
+    padding: 16px;
+    border-bottom: 1px solid #30363d;
+}
+
+.release-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.release-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+.release-title:hover {
+    text-decoration: underline;
+}
+
+.latest-badge {
+    background-color: #238636;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.prerelease-badge {
+    background-color: #9e6a03;
+    color: #ffffff;
+    padding: 2px 8px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.release-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #8b949e;
+}
+
+.release-tag {
+    color: #58a6ff;
+    text-decoration: none;
+}
+
+.release-tag:hover {
+    text-decoration: underline;
+}
+
+.release-date {
+    color: #8b949e;
+}
+
+.release-body {
+    padding: 16px;
+    border-bottom: 1px solid #30363d;
+}
+
+.release-assets {
+    background-color: #0d1117;
+}
+
+.assets-header {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 14px;
+    border-bottom: 1px solid #21262d;
+    background-color: #161b22;
+}
+
+.asset-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    border-bottom: 1px solid #21262d;
+    color: #58a6ff;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.asset-row:last-child {
+    border-bottom: none;
+}
+
+.asset-row:hover {
+    background-color: #161b22;
+}
+
+.asset-name {
+    color: #58a6ff;
+}
+
+.asset-size {
+    color: #8b949e;
+    font-size: 12px;
+}
+
+.no-releases {
+    padding: 40px;
+    text-align: center;
+    color: #8b949e;
+}
+
+.release-single-content {
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.release-single-header {
+    background-color: #161b22;
+    padding: 24px;
+    border-bottom: 1px solid #30363d;
+}
+
+.release-single-title {
+    margin: 0 0 12px 0;
+    font-size: 32px;
+    font-weight: 600;
+}
+
+.release-single-meta {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 14px;
+    color: #8b949e;
+}
+
+
+.not-supported {
+    padding: 60px 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.not-supported h1 {
+    font-size: 28px;
+    margin-bottom: 16px;
+    color: #e6edf3;
+}
+
+.not-supported p {
+    font-size: 16px;
+    color: #8b949e;
+    line-height: 1.6;
+    margin-bottom: 16px;
+}
+
+.github-link {
+    display: inline-block;
+    background-color: #238636;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 16px;
+}
+
+.github-link:hover {
+    background-color: #2ea043;
+}
+
+
+.header-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+a.file-row {
+    text-decoration: none;
+    color: inherit;
+}
+
+a.tree-item {
+    text-decoration: none;
+    color: inherit;
 }

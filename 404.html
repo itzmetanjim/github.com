@@ -6,18 +6,33 @@
     <title>Redirecting...</title>
     <script>
         (function() {
-            var path = window.location.pathname;
-            var segments = path.split('/').filter(function(segment) {
-                return segment.length > 0;
-            });
-            var basePath = window.location.hostname.split('.')[0];
-            if (segments.length > 0 && segments[0] === 'github.com') {
-                segments.shift();
+            var fullPath = window.location.pathname;
+            var basePath = '/github.com';
+            
+            if (fullPath.startsWith(basePath)) {
+                var routePath = fullPath.slice(basePath.length);
+                if (routePath && routePath !== '/') {
+                    window.location.replace(window.location.origin + basePath + '/#' + routePath);
+                } else {
+                    window.location.replace(window.location.origin + basePath + '/');
+                }
+            } else {
+                window.location.replace(window.location.origin + basePath + '/');
             }
-            var hashPath = segments.length > 0 ? '#/' + segments.join('/') : '';
-            window.location.replace(window.location.origin + '/' + hashPath);
         })();
     </script>
+    <style>
+        body {
+            background-color: #0d1117;
+            color: #e6edf3;
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <p>Redirecting...</p>
