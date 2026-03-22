@@ -16,9 +16,10 @@ let repoTreeCache = null;
 function getFetchOptions() {
     const pat = localStorage.getItem('github_pat');
     if (pat) {
+        const authPrefix = pat.startsWith('ghp_') ? 'token' : 'Bearer';
         return {
             headers: {
-                'Authorization': `token ${pat}`
+                'Authorization': `${authPrefix} ${pat}`
             }
         };
     }
@@ -739,12 +740,11 @@ async function renderHome(owner, repo, branch, app) {
         }
     } catch (err) {
         console.error("Error rendering home:", err);
-        app.innerHTML = renderNotSupported(owner, repo, '');
-        if(!err.message.toLowerCase().includes("api rate limit exceeded")){
-            document.querySelector("#app").innerHTML = renderNotSupported('', '');
+        if(!err.message || !err.message.toLowerCase().includes("api rate limit exceeded")){
+            app.innerHTML = renderNotSupported(owner, repo, '');
         }else{
-            const githubLink = buildGitHubLink(owner, repo, extraPath);
-            document.querySelector("#app").innerHTML = `
+            const githubLink = buildGitHubLink(owner, repo, '');
+            app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
         <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
@@ -848,10 +848,8 @@ async function main() {
 }
 
 main().catch(err => {
-
     console.error("Error in main:", err);
-    console.log(!err.message.toLowerCase().includes("api rate limit exceeded"))
-    if(!err.message.toLowerCase().includes("api rate limit exceeded")){
+    if(!err.message || !err.message.toLowerCase().includes("api rate limit exceeded")){
         document.querySelector("#app").innerHTML = renderNotSupported('', '');
     }else{
         document.querySelector("#app").innerHTML = `
