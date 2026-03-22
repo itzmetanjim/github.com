@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecting...</title>
+    <script>
+        (function() {
+            var path = window.location.pathname;
+            var segments = path.split('/').filter(function(segment) {
+                return segment.length > 0;
+            });
+            var basePath = window.location.hostname.split('.')[0];
+            if (segments.length > 0 && segments[0] === 'github.com') {
+                segments.shift();
+            }
+            var hashPath = segments.length > 0 ? '#/' + segments.join('/') : '';
+            window.location.replace(window.location.origin + '/' + hashPath);
+        })();
+    </script>
+</head>
+<body>
+    <p>Redirecting...</p>
+</body>
+</html>
