@@ -139,7 +139,7 @@ function renderNotSupported(owner, repo, extraPath) {
         <div class="not-supported">
             <h1>This page is not supported</h1>
             <p>This GitHub client does not support this link. Because GitHub does not allow IFrames, I had to make an alternative client for GitHub, which may not support all features.</p>
-            <p><a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub</a></p>
+            <p><a href="${githubLink}" target="_blank">Click here to open this page on GitHub</a></p>
         </div>
     `;
 }
