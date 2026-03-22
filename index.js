@@ -13,6 +13,18 @@ const SVGRELEASE=`<svg class="svgi" xmlns="http://www.w3.org/2000/svg" viewBox="
 
 let repoTreeCache = null;
 
+function getFetchOptions() {
+    const pat = localStorage.getItem('github_pat');
+    if (pat) {
+        return {
+            headers: {
+                'Authorization': `token ${pat}`
+            }
+        };
+    }
+    return {};
+}
+
 function formatBytes(bytes) {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -25,7 +37,7 @@ function formatTimeAgo(dateString) {
     const date = new Date(dateString);
     const now = new Date();
     const seconds = Math.floor((now - date) / 1000);
-    
+
     if (seconds < 60) return 'just now';
     const minutes = Math.floor(seconds / 60);
     if (minutes < 60) return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
@@ -133,7 +145,7 @@ function renderNotSupported(owner, repo, extraPath) {
 
 async function fetchRepoTree(owner, repo, branch) {
     try {
-        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`);
+        const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`, getFetchOptions());
         const data = await res.json();
         return data.tree || [];
     } catch (e) {
@@ -144,11 +156,11 @@ async function fetchRepoTree(owner, repo, branch) {
 
 function buildTreeHTML(tree, owner, repo, branch, currentPath) {
     const root = { children: {}, type: 'tree' };
-    
+
     tree.forEach(item => {
         const parts = item.path.split('/');
         let current = root;
-        
+
         parts.forEach((part, idx) => {
             if (!current.children[part]) {
                 current.children[part] = {
@@ -161,14 +173,14 @@ function buildTreeHTML(tree, owner, repo, branch, currentPath) {
             current = current.children[part];
         });
     });
-    
+
     function renderNode(node, indent = 0) {
         const children = Object.values(node.children).sort((a, b) => {
             if (a.type === 'tree' && b.type !== 'tree') return -1;
             if (a.type !== 'tree' && b.type === 'tree') return 1;
             return a.name.localeCompare(b.name);
         });
-        
+
         let html = '';
         children.forEach(child => {
             const isFolder = child.type === 'tree';
@@ -176,22 +188,22 @@ function buildTreeHTML(tree, owner, repo, branch, currentPath) {
             const linkType = isFolder ? 'tree' : 'blob';
             const isActive = child.path === currentPath;
             const isInPath = currentPath && currentPath.startsWith(child.path + '/');
-            
+
             const paddingLeft = 12 + (indent * 16);
             const link = buildLink(owner, repo, linkType, branch, child.path);
-            
+
             html += `<a href="${link}" class="tree-item ${isActive ? 'active' : ''}" style="padding-left: ${paddingLeft}px;">
                 <span class="tree-icon">${icon}</span>
                 <span>${child.name}</span>
             </a>`;
-            
+
             if (isFolder && (isInPath || isActive)) {
                 html += renderNode(child, indent + 1);
             }
         });
         return html;
     }
-    
+
     return renderNode(root);
 }
 
@@ -199,7 +211,7 @@ function renderBreadcrumb(owner, repo, branch, path) {
     const parts = path ? path.split('/') : [];
     const homeLink = buildLink(owner, repo);
     let html = `<a href="${homeLink}" class="breadcrumb-link">${repo}</a>`;
-    
+
     if (parts.length > 0) {
         let currentPath = '';
         parts.forEach((part, idx) => {
@@ -213,33 +225,33 @@ function renderBreadcrumb(owner, repo, branch, path) {
             }
         });
     }
-    
+
     return html;
 }
 
 async function renderFileView(owner, repo, branch, filePath, app) {
     try {
         app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading...</div>`;
-        
+
         const [fileRes, commitsRes, tree] = await Promise.all([
-            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`),
-            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&sha=${branch}&per_page=1`),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${branch}`, getFetchOptions()),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${filePath}&sha=${branch}&per_page=1`, getFetchOptions()),
             fetchRepoTree(owner, repo, branch)
         ]);
-        
+
         const fileData = await fileRes.json();
         const commits = await commitsRes.json();
         const lastCommit = commits[0];
-        
+
         if (fileData.message || !fileData.content) {
             throw new Error(fileData.message || 'Failed to load file');
         }
-        
+
         const content = decodeBase64(fileData.content);
         const lines = content.split('\n');
         const lineCount = lines.length;
         const lang = getLanguageFromFilename(filePath);
-        
+
         let highlightedCode = content;
         try {
             if (typeof hljs !== 'undefined') {
@@ -249,13 +261,13 @@ async function renderFileView(owner, repo, branch, filePath, app) {
         } catch (e) {
             highlightedCode = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
-        
+
         const lineNumbers = lines.map((_, i) => `<div class="line-number">${i + 1}</div>`).join('');
         const codeLines = highlightedCode.split('\n').map(line => `<div class="code-line">${line || ' '}</div>`).join('');
-        
+
         const breadcrumb = renderBreadcrumb(owner, repo, branch, filePath);
         const treeHTML = buildTreeHTML(tree, owner, repo, branch, filePath);
-        
+
         app.innerHTML = `
             <div class="file-header">
                 <div class="file-nav">${breadcrumb}</div>
@@ -301,27 +313,27 @@ async function renderFileView(owner, repo, branch, filePath, app) {
 async function renderFolderView(owner, repo, branch, folderPath, app) {
     try {
         app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading...</div>`;
-        
+
         const [contentsRes, commitsRes, tree] = await Promise.all([
-            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${folderPath}?ref=${branch}`),
-            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${folderPath}&sha=${branch}&per_page=1`),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${folderPath}?ref=${branch}`, getFetchOptions()),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?path=${folderPath}&sha=${branch}&per_page=1`, getFetchOptions()),
             fetchRepoTree(owner, repo, branch)
         ]);
-        
+
         const contents = await contentsRes.json();
         const commits = await commitsRes.json();
         const lastCommit = commits[0];
-        
+
         if (!Array.isArray(contents)) {
             throw new Error(contents.message || 'Failed to load folder contents');
         }
-        
+
         const dirs = contents.filter(item => item.type === 'dir').sort((a, b) => a.name.localeCompare(b.name));
         const files = contents.filter(item => item.type === 'file').sort((a, b) => a.name.localeCompare(b.name));
         const sortedContents = [...dirs, ...files];
-        
+
         let fileListHTML = '';
-        
+
         const pathParts = folderPath.split('/');
         const parentPath = pathParts.slice(0, -1).join('/');
         const parentLink = parentPath ? buildLink(owner, repo, 'tree', branch, parentPath) : buildLink(owner, repo);
@@ -331,7 +343,7 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
                 <div class="file-name">..</div>
             </a>
         `;
-        
+
         sortedContents.forEach(item => {
             const icon = item.type === 'dir' ? SVGFOLDER : SVGFILE;
             const itemType = item.type === 'dir' ? 'tree' : 'blob';
@@ -343,10 +355,10 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
                 </a>
             `;
         });
-        
+
         const breadcrumb = renderBreadcrumb(owner, repo, branch, folderPath);
         const treeHTML = buildTreeHTML(tree, owner, repo, branch, folderPath);
-        
+
         app.innerHTML = `
             <div class="file-header">
                 <div class="file-nav">${breadcrumb}</div>
@@ -395,21 +407,21 @@ async function renderReadme(owner, repo, branch, readmeContent, readmePath) {
             return '';
         }
     });
-    
+
     const basePath = readmePath.substring(0, readmePath.lastIndexOf('/'));
     let rendered = md.render(readmeContent);
-    
+
     rendered = rendered.replace(/src="(?!http|\/\/|data:)([^"]+)"/g, (match, p1) => {
         const fixedPath = basePath ? `${basePath}/${p1}` : p1;
         return `src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${fixedPath}"`;
     });
-    
+
     rendered = rendered.replace(/href="(?!http|\/\/|#|mailto:)([^"]+)"/g, (match, p1) => {
         const fixedPath = basePath ? `${basePath}/${p1}` : p1;
         const link = buildLink(owner, repo, 'blob', branch, fixedPath);
         return `href="${link}"`;
     });
-    
+
     return `
         <div class="readme-container">
             <div class="readme-header">${SVGFILE} README.md</div>
@@ -421,36 +433,36 @@ async function renderReadme(owner, repo, branch, readmeContent, readmePath) {
 async function renderReleases(owner, repo, app) {
     try {
         app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading releases...</div>`;
-        
+
         const [releasesRes, repoRes] = await Promise.all([
-            fetch(`https://api.github.com/repos/${owner}/${repo}/releases`),
-            fetch(`https://api.github.com/repos/${owner}/${repo}`)
+            fetch(`https://api.github.com/repos/${owner}/${repo}/releases`, getFetchOptions()),
+            fetch(`https://api.github.com/repos/${owner}/${repo}`, getFetchOptions())
         ]);
-        
+
         const releases = await releasesRes.json();
         const repoData = await repoRes.json();
-        
+
         if (!Array.isArray(releases)) {
             throw new Error(releases.message || 'Failed to load releases');
         }
-        
+
         const homeLink = buildLink(owner, repo);
-        
+
         let releasesHTML = '';
-        
+
         if (releases.length === 0) {
             releasesHTML = `<div class="no-releases">No releases published yet.</div>`;
         } else {
             releases.forEach((release, idx) => {
                 const releaseLink = buildLink(owner, repo, 'releases/tag', release.tag_name);
                 const isLatest = idx === 0;
-                
+
                 let bodyHTML = '';
                 if (release.body && typeof markdownit !== 'undefined') {
                     const md = window.markdownit({ html: true, linkify: true, breaks: true });
                     bodyHTML = md.render(release.body);
                 }
-                
+
                 let assetsHTML = '';
                 if (release.assets && release.assets.length > 0) {
                     assetsHTML = `
@@ -483,7 +495,7 @@ async function renderReleases(owner, repo, app) {
                         </div>
                     `;
                 }
-                
+
                 releasesHTML += `
                     <div class="release-card">
                         <div class="release-header">
@@ -503,7 +515,7 @@ async function renderReleases(owner, repo, app) {
                 `;
             });
         }
-        
+
         app.innerHTML = `
             <div id="releases">
                 <div class="releases-header">
@@ -527,23 +539,23 @@ async function renderReleases(owner, repo, app) {
 async function renderReleaseTag(owner, repo, tagName, app) {
     try {
         app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading release...</div>`;
-        
-        const releaseRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tagName}`);
+
+        const releaseRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/releases/tags/${tagName}`, getFetchOptions());
         const release = await releaseRes.json();
-        
+
         if (release.message) {
             throw new Error(release.message);
         }
-        
+
         const homeLink = buildLink(owner, repo);
         const releasesLink = buildLink(owner, repo, 'releases');
-        
+
         let bodyHTML = '';
         if (release.body && typeof markdownit !== 'undefined') {
             const md = window.markdownit({ html: true, linkify: true, breaks: true });
             bodyHTML = md.render(release.body);
         }
-        
+
         let assetsHTML = '';
         if (release.assets && release.assets.length > 0) {
             assetsHTML = release.assets.map(asset => `
@@ -553,7 +565,7 @@ async function renderReleaseTag(owner, repo, tagName, app) {
                 </a>
             `).join('');
         }
-        
+
         assetsHTML += `
             <a href="https://github.com/${owner}/${repo}/archive/refs/tags/${release.tag_name}.zip" class="asset-row" target="_blank">
                 <span class="asset-name">Source code (zip)</span>
@@ -562,7 +574,7 @@ async function renderReleaseTag(owner, repo, tagName, app) {
                 <span class="asset-name">Source code (tar.gz)</span>
             </a>
         `;
-        
+
         app.innerHTML = `
             <div id="release-single">
                 <div class="releases-header">
@@ -600,32 +612,32 @@ async function renderReleaseTag(owner, repo, tagName, app) {
 async function renderHome(owner, repo, branch, app) {
     try {
         app.innerHTML = `<div style="padding: 40px; text-align: center;">Loading...</div>`;
-        
+
         const [repoRes, contentsRes, commitsRes] = await Promise.all([
-            fetch(`https://api.github.com/repos/${owner}/${repo}`),
-            fetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`),
-            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&per_page=1`)
+            fetch(`https://api.github.com/repos/${owner}/${repo}`, getFetchOptions()),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/contents?ref=${branch}`, getFetchOptions()),
+            fetch(`https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&per_page=1`, getFetchOptions())
         ]);
-        
+
         const repoData = await repoRes.json();
         const contents = await contentsRes.json();
         const commits = await commitsRes.json();
         const lastCommit = commits[0];
-        
+
         if (repoData.message) {
             throw new Error(repoData.message);
         }
-        
+
         if (!branch) branch = repoData.default_branch;
-        
+
         if (!Array.isArray(contents)) {
             throw new Error(contents.message || 'Failed to load repository contents');
         }
-        
+
         const dirs = contents.filter(item => item.type === 'dir').sort((a, b) => a.name.localeCompare(b.name));
         const files = contents.filter(item => item.type === 'file').sort((a, b) => a.name.localeCompare(b.name));
         const sortedContents = [...dirs, ...files];
-        
+
         let fileListHTML = '';
         sortedContents.forEach(item => {
             const icon = item.type === 'dir' ? SVGFOLDER : SVGFILE;
@@ -638,16 +650,16 @@ async function renderHome(owner, repo, branch, app) {
                 </a>
             `;
         });
-        
+
         const description = repoData.description ? `<p class="repo-description">${repoData.description}</p>` : '';
         const topics = repoData.topics && repoData.topics.length > 0 
             ? `<div class="repo-topics">${repoData.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('')}</div>` 
             : '';
         const language = repoData.language ? `<div class="repo-language"><span class="language-color" style="background-color: ${getLanguageColor(repoData.language)};"></span>${repoData.language}</div>` : '';
         const license = repoData.license ? `<div class="repo-license">${SVGFILE} ${repoData.license.name}</div>` : '';
-        
+
         const releasesLink = buildLink(owner, repo, 'releases');
-        
+
         app.innerHTML = `
             <div id="home">
                 <div class="home-header">
@@ -662,7 +674,7 @@ async function renderHome(owner, repo, branch, app) {
                         <button>${SVGSTAR} Star <badge>${repoData.stargazers_count || 0}</badge></button>
                     </div>
                 </div>
-                
+
                 <div class="home-content">
                     <div class="main-content">
                         <div class="repo-header-info">
@@ -676,7 +688,7 @@ async function renderHome(owner, repo, branch, app) {
                                 </a>
                             </div>
                         </div>
-                        
+
                         <div class="commit-bar commit-bar-standalone">
                             <div class="commit-info">
                                 <img src="${lastCommit?.author?.avatar_url || ''}" class="commit-avatar">
@@ -688,15 +700,15 @@ async function renderHome(owner, repo, branch, app) {
                                 <span class="commit-date">${lastCommit ? formatTimeAgo(lastCommit.commit.author.date) : ''}</span>
                             </div>
                         </div>
-                        
+
                         <div class="repo-container">
                             <div class="rheader"><strong>Files</strong></div>
                             ${fileListHTML}
                         </div>
-                        
+
                         <div id="readme-section"></div>
                     </div>
-                    
+
                     <div class="sidebar">
                         <div class="about-section">
                             <h3>About</h3>
@@ -713,9 +725,9 @@ async function renderHome(owner, repo, branch, app) {
                 </div>
             </div>
         `;
-        
+
         try {
-            const readmeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme?ref=${branch}`);
+            const readmeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/readme?ref=${branch}`, getFetchOptions());
             if (readmeRes.ok) {
                 const readmeData = await readmeRes.json();
                 const readmeContent = decodeBase64(readmeData.content);
@@ -725,44 +737,66 @@ async function renderHome(owner, repo, branch, app) {
         } catch (e) {
             console.log("No README found:", e);
         }
-    } catch (error) {
-        console.error("Error rendering home:", error);
+    } catch (err) {
+        console.error("Error rendering home:", err);
         app.innerHTML = renderNotSupported(owner, repo, '');
+        if(!err.message.toLowerCase().includes("api rate limit exceeded")){
+            document.querySelector("#app").innerHTML = renderNotSupported('', '');
+        }else{
+            const githubLink = buildGitHubLink(owner, repo, extraPath);
+            document.querySelector("#app").innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        `
+            document.getElementById('pat-submit').addEventListener('click', () => {
+                const pat = document.getElementById('pat-input').value.trim();
+                if (pat) {
+                    localStorage.setItem('github_pat', pat);
+                    window.location.reload();
+                }
+            });
+        }
+
     }
 }
 
 async function main() {
     const path = getPathFromHash();
     const app = document.querySelector("#app");
-    
+
     if (path) {
         const parts = path.split("/").filter(p => p);
         const owner = parts[0];
         const repo = parts[1];
-        
+
         if (!owner || !repo) {
             app.innerHTML = `<h1>Invalid URL</h1><p>Use format: #/owner/repo</p>`;
             return;
         }
-        
+
         let branch = '';
         let viewType = 'home';
         let filePath = '';
-        
+
         if (parts.length >= 3) {
             const possibleViewType = parts[2];
-            
+
             if (possibleViewType === 'releases' && parts[3] === 'tag' && parts[4]) {
                 const tagName = parts.slice(4).join('/');
                 await renderReleaseTag(owner, repo, tagName, app);
                 return;
             }
-            
+
             if (possibleViewType === 'releases') {
                 await renderReleases(owner, repo, app);
                 return;
             }
-            
+
             if (possibleViewType === 'tree' || possibleViewType === 'blob') {
                 viewType = possibleViewType;
                 branch = parts[3] || '';
@@ -772,10 +806,10 @@ async function main() {
                 return;
             }
         }
-        
+
         if (viewType === 'tree' && filePath === '') {
             try {
-                const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+                const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, getFetchOptions());
                 const repoData = await repoRes.json();
                 await renderHome(owner, repo, branch || repoData.default_branch, app);
                 return;
@@ -783,7 +817,7 @@ async function main() {
                 console.error(e);
             }
         }
-        
+
         if (viewType === 'blob' && filePath) {
             await renderFileView(owner, repo, branch, filePath, app);
         } else if (viewType === 'tree' && filePath) {
@@ -791,7 +825,7 @@ async function main() {
         } else {
             if (!branch) {
                 try {
-                    const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+                    const repoRes = await fetch(`https://api.github.com/repos/${owner}/${repo}`, getFetchOptions());
                     const repoData = await repoRes.json();
                     branch = repoData.default_branch;
                 } catch (e) {
@@ -814,6 +848,26 @@ async function main() {
 }
 
 main().catch(err => {
+
     console.error("Error in main:", err);
-    document.querySelector("#app").innerHTML = renderNotSupported('', '');
+    console.log(!err.message.toLowerCase().includes("api rate limit exceeded"))
+    if(!err.message.toLowerCase().includes("api rate limit exceeded")){
+        document.querySelector("#app").innerHTML = renderNotSupported('', '');
+    }else{
+        document.querySelector("#app").innerHTML = `
+        <h1>API Rate Limit Exceeded</h1>
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT token to increase the limit to 5000/hour</p>
+        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        </p>
+        <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
+        <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        `
+        document.getElementById('pat-submit').addEventListener('click', () => {
+            const pat = document.getElementById('pat-input').value.trim();
+            if (pat) {
+                localStorage.setItem('github_pat', pat);
+                window.location.reload();
+            }
+        });
+    }
 });
