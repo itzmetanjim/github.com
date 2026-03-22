@@ -8,7 +8,10 @@
         (function() {
             var fullPath = window.location.pathname;
             var basePath = '/github.com';
-            
+            if(window.location.href.includes('hideheader=true')){
+                sessionStorage.setItem('hideHeader', 'true');
+                basePath += '?hideheader=true';
+            }
             if (fullPath.startsWith(basePath)) {
                 var routePath = fullPath.slice(basePath.length);
                 if (routePath && routePath !== '/') {
