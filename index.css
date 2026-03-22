@@ -1,0 +1,108 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    background-color: #14181d;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 600;
+}
+.center {
+    width: 70vw;
+    margin: 0 auto;
+}
+.r2 {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  position: relative;
+  top: 6px;
+  border: 1px solid #ffffff26;
+}
+a {
+    color: rgb(68,146,248)
+}
+#home{
+    margin-top: 20px;
+}
+button{
+    color:#f0f6fc;
+    background-color: #212830;
+    border: 1px solid #3d444d;
+    font-weight: 600;
+    padding: 3px 12px;
+    font-size: 12px;
+    line-height: 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+button:hover{
+    background-color: #1c2128;
+}
+.right {
+    float: right;
+}
+badge{
+    background-color:#2f3742;
+    font-size: 12px;
+    line-height: 18px;
+    font-weight: 600;
+    min-width:24px;
+    border-radius: 24px;
+    padding: 0 6px;
+    text-align: center;
+}
+.svgi{
+    color:rgb(145, 152, 161);
+    fill:rgb(145, 152, 161);
+    vertical-align: middle;
+    position: relative;
+    bottom: 2px;
+}
+.svgi2{
+    color:#ffffff !important;
+    fill:#ffffff !important;
+    vertical-align: middle;
+    position: relative;
+    bottom: 2px;
+}
+.coli{
+    color:rgb(145, 152, 161);
+
+}
+hr{
+    border:0;
+    border-top:1px solid rgb(61, 68, 77);
+
+}
+.a {text-decoration:none;color:inherit}
+.repo-container{
+    border:1px solid #40464e;
+    border-radius:6px;
+    padding:0;
+    font-size:14px;
+    font-weight:400;
+}
+
+.rheader{
+    background-color:#1c2128;
+}
+.repo-container > *{
+    border-bottom:1px solid #40464e;
+    padding:8px 8px 8px 16px;
+}
+.repo-container > *:last-child{
+    border-bottom:none;
+}
+.repo-container > *:hover{
+    background-color:#1c2128;
+}
+.repo-container .svgi{
+    margin-right:8px;
+}
+.green{
+    background-color:rgb(46, 154, 64);
+    border:1px solid #ffffff26;
+}
