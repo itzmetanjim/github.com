@@ -915,6 +915,22 @@ async function main() {
             await renderHome(owner, repo, branch, app);
         }
     } else {
+        if(window.location.href.includes("homepage")){
+            app.innerHTML=`
+            <div style="padding: 40px; text-align: center;">
+                <input type="text" id="homepage-input" placeholder="Enter owner/repo" style="width: 400px; padding: 8px;">    
+                <button id="homepage-go" style="padding: 8px 16px; margin-left: 10px;">Go</button>
+            </div>
+            `
+            document.getElementById('homepage-go').addEventListener('click', () => {
+                const input = document.getElementById('homepage-input').value.trim();
+                if(input){
+                    window.location.hash = `#/${input}`;
+                    window.location.reload();
+                }
+            });
+            return;
+        }
         app.innerHTML = `
             <div style="padding: 40px;">
             <p>(if you are here from spaceshipvote, there has been a bug)
