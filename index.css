@@ -724,7 +724,18 @@ hr{
     padding-bottom: 16px;
     border-bottom: 1px solid #30363d;
 }
-
+#nav{
+margin-top:6px;
+margin-left:6px;
+margin-right:6px;
+font-size:6px;
+}
+#nav button,
+#nav input {
+    padding: 6px 6px 6px 6px;
+    line-height: 14px;
+    margin-right: 6px;
+}
 .releases-nav {
     font-size: 16px;
     color: #8b949e;
