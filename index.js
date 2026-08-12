@@ -822,7 +822,38 @@ async function renderHome(owner, repo, branch, app) {
                 const readmeData = await readmeRes.json();
                 const readmeContent = decodeBase64(readmeData.content);
                 const readmeHtml = await renderReadme(owner, repo, branch, readmeContent, readmeData.path);
-                document.getElementById('readme-section').innerHTML = readmeHtml;
+                const rSection=document.getElementById('readme-section')
+                rSection.innerHTML=readmeHtml;
+                const regex=new RegExp("–|—|“|”|‘|’", "giu") //matches ai em dash en dash and curly quotes not on keyboard
+                const walker=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT)
+                const textNodes=[ ]
+                let currNode;
+                while(currNode=walker.nextNode()){
+                    textNodes.push(currNode)
+                }
+                var havemodified=false
+                //we have all of the text nodes now yay
+                for(let i=textNodes.length-1;i>=0;i--){ //holy cursed for loop
+                    const node=textNodes[i]
+                    const par=node.parentNode
+                    if(["STYLE","SCRIPT","MARK"].includes(par.tagName)){continue}
+                    if(regex.test(node.nodeValue)){
+                        regex.lastIndex=0
+                        const tdi=document.createElement("div")
+                        tdi.innerHTML=node.nodeValue.replace(regex,match=>{havemodified=true;return `<span class="highlight">${match}</span>`})
+                        while(tdi.firstChild){
+                            par.insertBefore(tdi.firstChild,node)
+                        }
+                        par.removeChild(node)
+                    }
+                }
+                if(havemodified){
+                    const notespan=document.createElement("div")
+                    notespan.className="faded"
+                    notespan.innerHTML='note: chars common in ai text are being <span class="highlight wtext">highlighted</span>. these are not in a normal keyboard.'
+                    document.querySelector(".home-header").after(notespan)
+                }
+
             }
         } catch (e) {
             console.log("No README found:", e);
@@ -840,7 +871,7 @@ async function renderHome(owner, repo, branch, app) {
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
-        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (ctrl+click for new tab)</a></p>
         `
             document.getElementById('pat-submit').addEventListener('click', () => {
                 const pat = document.getElementById('pat-input').value.trim();

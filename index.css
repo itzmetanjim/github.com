@@ -7,6 +7,18 @@ body {
     font-size: 14px;
     font-weight: 400;
 }
+.highlight {
+    background-color: #fdf9d344;
+}
+.faded {
+    color: #8b949e;
+    margin-bottom: 5px;
+    margin-top: -5px;
+    font-size: 10px;
+}
+.wtext.wtext.wtext {
+    color: #e6edf3 !important;
+}
 .center {
     width: 90vw;
     max-width: 1400px;
