@@ -323,7 +323,7 @@ async function renderFileView(owner, repo, branch, filePath, app) {
             app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
@@ -426,7 +426,7 @@ async function renderFolderView(owner, repo, branch, folderPath, app) {
             app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
@@ -589,7 +589,7 @@ async function renderReleases(owner, repo, app) {
             app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
@@ -682,7 +682,7 @@ async function renderReleaseTag(owner, repo, tagName, app) {
             app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
@@ -867,11 +867,11 @@ async function renderHome(owner, repo, branch, app) {
             app.innerHTML = `
         <h1>API Rate Limit Exceeded</h1>
         <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
-        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (ctrl+click for new tab)</a></p>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
         `
             document.getElementById('pat-submit').addEventListener('click', () => {
                 const pat = document.getElementById('pat-input').value.trim();
@@ -988,13 +988,14 @@ main().catch(err => {
     if(!err.message || !err.message.toLowerCase().includes("api rate limit exceeded")){
         document.querySelector("#app").innerHTML = renderNotSupported('', '');
     }else{
-        document.querySelector("#app").innerHTML = `
+        document.querySelector("#app").innerHTML =`
         <h1>API Rate Limit Exceeded</h1>
-        <p>GitHub's API rate limit has been exceeded. You can use a github PAT token to increase the limit to 5000/hour</p>
-        <p><a href="https://github.com/settings/personal-access-tokens">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
+        <p>GitHub's API rate limit has been exceeded. You can use a github PAT to increase the limit</p>
+        <p><a href="https://github.com/settings/personal-access-tokens" class="github-link">Click here</a>, then click "Generate new token" &gt; add any name and click "Generate" at the bottom. No additional permissions are needed.
         </p>
         <input type="text" id="pat-input" placeholder="Enter GitHub PAT" style="width: 300px; padding: 8px; margin-top: 10px;">
         <button id="pat-submit" style="padding: 8px 16px; margin-left: 10px;">Submit</button>
+        <p>You can also <a href="${githubLink}" target="_blank" class="github-link">Click here to open this page on GitHub (new tab)</a></p>
         `
         document.getElementById('pat-submit').addEventListener('click', () => {
             const pat = document.getElementById('pat-input').value.trim();
